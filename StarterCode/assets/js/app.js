@@ -15,7 +15,7 @@ var height = svgHeight - margin.top - margin.bottom;
 // Create an SVG wrapper, append an SVG group that will hold our chart,
 // and shift the latter by left and top margins.
 var svg = d3
-  .select(".chart")
+  .select("#scatter")
   .append("svg")
   .attr("width", svgWidth)
   .attr("height", svgHeight);
@@ -24,7 +24,7 @@ var svg = d3
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-d3.csv("assets/data.csv").then(function(data){
+d3.csv("assets/data/data.csv").then(function(data){
   console.log(data); 
 
   data.forEach(function(data){
@@ -84,7 +84,7 @@ function updateToolTip(chosenXAxis, circlesGroup) {
     .attr("class", "tooltip")
     .offset([80, -60])
     .html(function(d) {
-      return (`${d.healthcare}<br>${label} ${d[chosenXAxis]}`);
+      return (`${d.state}<br>${label} ${d[chosenXAxis]}`);
     });
 
   circlesGroup.call(toolTip);
@@ -101,13 +101,14 @@ function updateToolTip(chosenXAxis, circlesGroup) {
 }
 
 // Retrieve data from the CSV file and execute everything below
-d3.csv("data.csv").then(function(data, err) {
+d3.csv("assets/data/data.csv").then(function(data, err) {
   if (err) throw err;
 
   // parse data
   data.forEach(function(data) {
     data.poverty = +data.poverty;
-    data.healthcare = +healthcare;
+    data.healthcare = +data.healthcare;
+    data.state = +data.state; 
   });
 
   // xLinearScale function above csv import
@@ -143,6 +144,17 @@ d3.csv("data.csv").then(function(data, err) {
     .attr("fill", "pink")
     .attr("opacity", ".5");
 
+  chartGroup.selectAll("text.text-circles")
+    .data(data)
+    .enter()
+    .append("text")
+    .classed("text-circles", true)
+    .text(d => d.abbr)
+    .attr("x", d => xLinearScale(d.poverty))
+    .attr("y", d => yLinearScale(d.healthcare))
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px");   
+
   // Create group for  2 x- axis labels
   var labelsGroup = chartGroup.append("g")
     .attr("transform", `translate(${width / 2}, ${height + 20})`);
@@ -152,14 +164,14 @@ d3.csv("data.csv").then(function(data, err) {
     .attr("y", 20)
     .attr("value", "poverty") // value to grab for event listener
     .classed("active", true)
-    .text("Hair Metal Ban Hair Length (inches)");
+    .text("In Poverty (%)");
 
-  var albumsLabel = labelsGroup.append("text")
-    .attr("x", 0)
-    .attr("y", 40)
-    .attr("value", "healthcare") // value to grab for event listener
-    .classed("inactive", true)
-    .text("# of Albums Released");
+  //var albumsLabel = labelsGroup.append("text")
+    //.attr("x", 0)
+   // .attr("y", 40)
+   // .attr("value", "healthcare") // value to grab for event listener
+  //  .classed("inactive", true)
+   // .text("# of Albums Released");//
 
   // append y axis
   chartGroup.append("text")
